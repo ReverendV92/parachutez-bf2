@@ -1,0 +1,12 @@
+"AddonInfo"
+{
+	"name"			"BF2 ZParachute"
+	"version"		"2.3"
+	"up_date"		"05 June 2011"
+	"author_name"	"Zoey, Nirrti, Jesse V92"
+	"author_email"	"desertyetti@firestormstudios.us"
+	"author_url"	"http://www.firestormstudios.us"
+	"info"			"ZParachute Redone as BF2, version 2; Big Thx to Zoey for the awesome code work"
+
+	"override"	"0"
+}

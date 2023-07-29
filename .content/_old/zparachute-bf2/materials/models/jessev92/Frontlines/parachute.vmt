@@ -1,0 +1,22 @@
+
+VertexLitGeneric
+{
+
+	$basetexture			models/jessev92/frontlines/parachute_d
+	$bumpmap				models/jessev92/frontlines/parachute_b
+	
+	$halflambert			1
+	$ambientocclusion		1
+	$ambientoccltexture		models/jessev92/frontlines/parachute_a
+	
+	$phong					1
+	$phongexponenttexture	models/jessev92/frontlines/parachute_x
+	$phongexponent			1
+	$phongboost				1
+	
+	$detail             	models/jessev92/detail/cloth
+	$detailscale			8
+	$detailblendfactor		1
+	$detailblendmode			0
+
+}

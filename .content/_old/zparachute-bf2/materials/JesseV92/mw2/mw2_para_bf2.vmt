@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "jessev92/mw2/mw2_para_bf2"
+	"$bumpmap" "jessev92/mw2/mw2_para_bf2_n"
+}

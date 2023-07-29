@@ -1,0 +1,6 @@
+ENT.Type = "anim"
+ENT.PrintName		= "BF2 Decorative parachute"
+ENT.Author			= "Jesse V-92"
+ENT.Contact			= "desertyetti@firestormstudios.us"
+ENT.Purpose			= "Save You."
+ENT.Instructions	= "Obvious."

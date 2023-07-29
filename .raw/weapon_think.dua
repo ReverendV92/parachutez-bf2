@@ -1,0 +1,45 @@
+
+function SWEP:Think()
+	local	_P	=	self.Owner
+	local	_VM	=	_P:GetViewModel()
+	if _P.GetNWBool( "VNTParachuting" ) == false	then
+		_VM:SendViewModelMatchingSequence( _VM:LookupSequence( "idleup" ) )
+		if _P:KeyDown( IN_RELOAD ) then
+			if SERVER then
+				_P:SetNWBool( "VNTParachuting", true )
+			end
+			_VM:SendViewModelMatchingSequence( _VM:LookupSequence( "Deploy" ) )
+			_P:ViewPunch(Angle(35,0,0))
+			self.WorldModel:SetModel("models/jessev92/resliber/weapons/parachute_backpack_open_w.mdl")
+		end
+	end
+
+	if _P.GetNWBool( "VNTParachuting" ) == true	then
+		if CLIENT then
+			if _P:KeyDown(IN_FORWARD) then
+				_VM:SendViewModelMatchingSequence( _VM:LookupSequence( "Forward" ) )
+			elseif _P:KeyDown(IN_BACK) then
+				_VM:SendViewModelMatchingSequence( _VM:LookupSequence( "Back" ) )
+			else
+				_VM:SendViewModelMatchingSequence( _VM:LookupSequence( "Idle" ) )
+			end
+			if	_P:OnGround() then
+				_P:ViewPunch(Angle(35,0,0))
+			end
+		end
+		if SERVER then
+			if _P:KeyDown(IN_FORWARD) then
+				_P:SetLocalVelocity(	_P:GetForward() * 450 * _P.FlarePara * 1.1 - _P:GetUp() * 320 * _P.FlarePara	)
+			elseif _P:KeyDown(IN_BACK) then
+				_P:SetLocalVelocity(_P:GetForward()*300*_P.FlarePara*1.1 - _P:GetUp()*320*_P.FlarePara)
+			else
+				_P:SetLocalVelocity(_P:GetForward()*375*_P.FlarePara*1.1 - _P:GetUp()*320*_P.FlarePara)
+			end
+			if	_P:OnGround() then
+				_P:SetNWBool( "VNTParachuting", false )
+				_P:StripWeapon("eq_zpara_bf2")
+			end
+		end
+		
+	end
+end
