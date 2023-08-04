@@ -1,15 +1,15 @@
 
 AddCSLuaFile( )
 
-CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode; -1=Disabled, 0=All Users, 1=Admin Only, 2=Super Admin Only" , -1 , 2 )
-
+CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
 CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
+CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
 
 sound.Add({	["name"] = "VNT_ParachuteZ_DetachClip" ,
 	["channel"] = CHAN_BODY ,
 	["volume"] = 1.0 ,
-	["level"] = 50 ,
-	["pitch"] = { 90, 110 } ,
+	["level"] = 75 ,
+	["pitch"] = { 90 , 110 } ,
 	["sound"] = { "npc/combine_soldier/zipline_clip1.wav" , "npc/combine_soldier/zipline_clip2.wav" }
 } )
 
@@ -46,9 +46,9 @@ if SERVER then
 	resource.AddWorkshop( "105699464" ) 
 
 	-- XYZ Coordinate offset for the parachute entities
-	local ActiveParachute = { 10 , 0 , 100 }
-	local LandedParachute = { -100 , 50 , 10 }
-	local DitchedParachute = { 10 , 0 , 0 }
+	local ActiveParachute = { 10 , 0 , 100 , 0 }
+	local LandedParachute = { -100 , 50 , 10 , 0 }
+	local DitchedParachute = { -100 , 50 , 10 , 90 }
 
 	-- Parachute speed for IN_BACK, No Inputs, and IN_FORWARD, respectively
 	local ParachuteSpeed = { 300 , 375 , 450 }
@@ -56,173 +56,195 @@ if SERVER then
 	-- The stuff for spawning the parachute entity
 	function ParachuteKey( ply , key )
 
-		-- If the mod is diabled...
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) or 
+		-- If the mod is diabled or player is a spectator, don't run.
+		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
 
-		-- If player is a spectator...
-		ply:Team() == TEAM_SPECTATOR or
+		-- If player is already parachuting, don't run.
+		if ply.Parachuting then return end
 
-		-- If Admin-Only mode is active and the user is not an admin...
-		( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) or 
+		-- If Admin-Only mode is active and the user is not an admin, don't run.
+		if ( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
-		-- If Super Admin-Only mode is active and the user is not a super admin...
-		( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then
+		-- If Super Admin-Only mode is active and the user is not a super admin, don't run.
+		if ( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
-			-- Disabled! Enjoy the broken legs!
-			return
+		-- If player is allowed to parachute and they're activating their parachute key...
+		if ply.AllowToParachute and key == IN_JUMP then
 
-		else
+			-- Remove their parachute entity
+			ply:RemoveParachute()
 
-			-- If player:
-				-- Is pressing IN_JUMP
-				-- Is alive
-				-- Isn't Noclipping, in a vehicle, on the ground, or already in a parachute
-				-- Has a velocity > -600
-			if ( key == IN_JUMP and ply:IsValid( ) and ply:Alive( ) ) and not ( ply:GetMoveType( ) == MOVETYPE_NOCLIP or ply:InVehicle( ) or ply:OnGround( ) or ply.Parachuting == true or ply:GetVelocity( ).z > -600 ) then
+			ply.EndParaTime = nil
 
-				ply.EndParaTime = nil
-				ply.Parachuting = true
-				umsg.Start( "PARAIsIn" , ply )
-				umsg.Bool( ply.Parachuting )
-				umsg.End( )
-				ply.FlarePara = 1
-				ply:ViewPunch( Angle( 35 , 0 , 0 ) )
-				local Para = ents.Create( "v92_zchute_bf2_active" )
-				Para:SetOwner( ply )
-				Para:SetPos( ply:GetPos( ) + ply:GetForward( ) * ActiveParachute[1] + ply:GetRight( ) * ActiveParachute[2] + ply:GetUp( ) * ActiveParachute[3] )
-				Para:SetAngles( ply:GetAngles( ) )
-				Para:Spawn( )
-				Para:Activate( )
+			-- Flag them as parachuting
+			ply.Parachuting = true
+			sendParStatus( ply, fl )
 
-				-- if CLIENT then
+			-- Set the default flare value
+			ply.FlarePara = 1
 
-					LoopingSound = CreateSound( ply , "v92/bf2/vehicles/air/parachute/parachute_ride_loop.wav" )
-					LoopingSound:PlayEx( GetConVarNumber( "vnt_parachutez_cl_volume" ) , 100 )
+			-- Visual feedback
+			ply:ViewPunch( Angle( 35 , 0 , 0 ) )
 
-				-- end
+			-- Create the parachute entity
+			local Para = entsCreate( "v92_zchute_bf2_active" )
+			Para:SetOwner( ply )
+			Para:SetPos( ply:GetPos() + ply:GetForward() * ActiveParachute[1] + ply:GetRight() * ActiveParachute[2] + ply:GetUp() * ActiveParachute[3] )
+			Para:SetAngles( ply:GetAngles() )
+			Para:Spawn()
+			Para:Activate()
 
-			end
+			-- Create the sound
+			LoopingSound = CreateSound( ply , "v92/bf2/vehicles/air/parachute/parachute_ride_loop.wav" )
+			LoopingSound:PlayEx( GetConVarNumber( "vnt_parachutez_cl_volume" ) , 100 )
 
 		end
 
 	end
 	hook.Add( "KeyPress" , "ParachuteKey" , ParachuteKey )
 
+	local PLAYER = FindMetaTable("Player")
+
+	function PLAYER:HaveParachuteZ()
+		if GetConVarNumber("vnt_parachutez_sv_mode") != 3 then 
+			return self:GetNWBool( "HaveParachuteZ" , true )
+		else
+			return self:GetNWBool( "HaveParachuteZ" , false )
+		end
+	end
+
+	function PLAYER:GiveParachute()
+		if self:HaveParachuteZ() then return false end
+		self:SetNWBool( "HaveParachuteZ" , true )
+		return true
+	end
+
+	function PLAYER:RemoveParachute()
+		if GetConVarNumber("vnt_parachutez_sv_mode") != 3 then 
+			return self:GetNWBool( "HaveParachuteZ" , true )
+		else
+			return self:GetNWBool( "HaveParachuteZ" , false )
+		end
+	end
+
+	hook.Add( "PlayerDeath" , "RemoveParachuteZ" , function( victim, inflictor, attacker )
+		if !IsValid( victim ) then return end
+		victim:RemoveParachute()
+	end )
+
+	local LandPunch, StartPunch, landang = Angle( 7 , 0 , 0 ),  Angle( -16 , 0 , 0 ), Angle( 0 , 270 , 0 )
+
+	local cds = {}
+
+	local function NotifyPlayerParachute( ply )
+		cds[ply] = cds[ply] or 0
+		if cds[ply] > CurTime() then return end
+		ply:SendLua("PlayParachuteDeploySND()")
+		cds[ply] = CurTime() + 3
+	end
+
 	function ParachuteThink( )
 
-		-- If the mod is diabled...
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) then
+		-- If the mod is diabled, don't run.
+		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) then return false end
 
-			-- Disabled! Enjoy the broken legs!
-			return
+		-- Find players so we can scrutinize them...
+		for k , ply in ipairs( playerGetAll( ) ) do
 
-		else
+			local ply_Forward = ply:GetForward()
+			local ply_Right = ply:GetRight()
+			local ply_Up = ply:GetUp()
+			local ply_pos, ply_ang = ply:GetPos(), ply:GetAngles()
+			local Velocity = ply:GetVelocity()
 
-			-- Find players so we can scrutinize them...
-			for k , v in pairs( player.GetAll( ) ) do
+			local onground = ply:OnGround()
+			local speedbl = Velocity.z > 120
+			local mt, wl = ply:GetMoveType(), ply:WaterLevel()
 
-				-- If Admin-Only mode is active and the user is not an admin...
-				if ( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , v:GetNWString( "usergroup" ) ) ) or
-				
-				-- If Super Admin-Only mode is active and the user is not a super admin...
-				( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , v:GetNWString( "usergroup" ) ) )
+			-- Reset the allow to parachute check
+			ply.AllowToParachute = nil
 
-				then
+			-- If user is parachuting...
+			if !ply.Parachuting then 
+				if onground then continue end
+				if mt == MOVETYPE_NOCLIP then continue end
+				if ply:InVehicle() then continue end
+				if Velocity.z > -600 then continue end
+				if ply:HaveParachuteZ() then 
+					ply.AllowToParachute = true
+					NotifyPlayerParachute(ply)
+				end
+				continue
+			end
 
-					-- No parachute for you, dipshit!
-					return
+			-- If the player enters a non-parachute situtation...
+			if ply.EndParaTime and CurTime() >= ply.EndParaTime and onground or wl > 0 or mt == MOVETYPE_LADDER or speedbl then
 
-				else
+				ply.EndParaTime = nil
+				ply.Parachuting = false
 
-					-- If user is parachuting...
-					if v.Parachuting == true then
+				sendParStatus(ply)
+				ply.FlarePara = 1
 
-						-- If the parachute is ended and the user is on the ground...
-						if v.EndParaTime and CurTime( ) >= v.EndParaTime and v:OnGround() == true or 
-						-- Or if the user is in water...
-						v:WaterLevel() > 0 or 
-						-- Or if the user is on a ladder...
-						v:GetMoveType() == MOVETYPE_LADDER then
+				ply:ViewPunch( StartPunch )
 
-							v.EndParaTime = nil
-							v.Parachuting = false
-							umsg.Start( "PARAIsIn" , v )
-							umsg.Bool( v.Parachuting )
-							umsg.End( )
-							v.FlarePara = 1
-							v:ViewPunch( Angle( -16 , 0 , 0 ) )
-							local ParaLand = ents.Create( "v92_zchute_bf2_land" )
-							ParaLand:SetOwner( v )
-							ParaLand:SetPos( v:GetPos( ) + v:GetForward( ) * LandedParachute[1] + v:GetRight( ) * LandedParachute[2] + v:GetUp( ) * LandedParachute[3] )
-							ParaLand:SetAngles( v:GetAngles( ) + Angle( 0 , 270 , 0 ) )
-							ParaLand:Spawn( )
-							ParaLand:Activate( )
+				local ParaLand = entsCreate( "v92_zchute_bf2_abandon" )
 
-							LoopingSound:Stop( )
+				ParaLand:SetOwner( ply )
+				ParaLand:SetPos( ply_pos + ply_Forward * LandedParachute[1] + ply_Right * LandedParachute[2] + ply_Up * LandedParachute[3] )
+				ParaLand:SetAngles( ply_ang * LandedParachute[4]  )
+				ParaLand:Spawn()
+				ParaLand:Activate()
 
-						end
+				LoopingSound:Stop()
 
-						if v:KeyDown( IN_USE ) and v.FlarePara > 0.4 then
+			end
 
-							v.FlarePara = v.FlarePara - 0.005
+			if ply:KeyDown( IN_USE ) and ply.FlarePara > 0.4 then
 
-							if v.FlarePara < 0.4 then
-								v.FlarePara = 0.4
-							end
+				ply.FlarePara = ply.FlarePara - 0.005
 
-						end
-
-						if v:KeyDown( IN_FORWARD ) then
-
-							v:SetLocalVelocity( v:GetForward( ) * ParachuteSpeed[3] * v.FlarePara * 1.1 - v:GetUp( ) * 320 * v.FlarePara )
-
-						elseif v:KeyDown( IN_BACK ) then
-
-							v:SetLocalVelocity( v:GetForward( ) * ParachuteSpeed[1] * v.FlarePara * 1.1 - v:GetUp( ) * 320 * v.FlarePara )
-
-						else
-
-							v:SetLocalVelocity( v:GetForward( ) * ParachuteSpeed[2] * v.FlarePara * 1.1 - v:GetUp( ) * 320 * v.FlarePara )
-
-						end
-
-						if ( v:KeyDown( IN_DUCK ) and v:KeyDown( IN_WALK ) and v.Parachuting == true ) or not ( v:Alive( ) or IsValid( v ) ) then
-
-							v.Parachuting = false
-							umsg.Start( "PARAIsIn" , v )
-							umsg.Bool( v.Parachuting )
-							umsg.End( )
-							v.FlarePara = 1
-							v:ViewPunch( Angle( -15 , 0 , 0 ) )
-							local ParaDitch = ents.Create( "v92_zchute_bf2_abandon" )
-							ParaDitch:SetOwner( v )
-							ParaDitch:SetPos( v:GetPos( ) + v:GetForward( ) * DitchedParachute[1] + v:GetRight( ) * DitchedParachute[2] + v:GetUp( ) * DitchedParachute[3] )
-							ParaDitch:SetAngles( v:GetAngles( ) )
-							ParaDitch:Spawn( )
-							ParaDitch:Activate( )
-
-							LoopingSound:Stop( )
-
-						end
-
-						if v:OnGround( ) and v.Parachuting == true and not v.EndParaTime then
-
-							v.EndParaTime = CurTime( ) + 0.25
-							umsg.Start( "PARAIsIn" , v )
-							umsg.Bool( false )
-							umsg.End( )
-							v:ViewPunch( Angle( 7 , 0 , 0 ) )
-
-							LoopingSound:Stop( )
-
-						end
-
-					end
-
+				if ply.FlarePara < 0.4 then
+					ply.FlarePara = 0.4
 				end
 
 			end
 
+			if ply:KeyDown( IN_FORWARD ) then
+				ply:SetLocalVelocity( ply_Forward * ParachuteSpeed[3] * ply.FlarePara * 1.1 - ply_Up * 320 * ply.FlarePara )
+			elseif ply:KeyDown( IN_BACK ) then
+				ply:SetLocalVelocity( ply_Forward * ParachuteSpeed[1] * ply.FlarePara * 1.1 - ply_Up * 320 * ply.FlarePara )
+			else
+				ply:SetLocalVelocity( ply_Forward * ParachuteSpeed[2] * ply.FlarePara * 1.1 - ply_Up * 320 * ply.FlarePara )
+			end
+
+			if ( ply:KeyDown( IN_DUCK ) and ply:KeyDown( IN_WALK ) and ply.Parachuting ) or not ( ply:Alive( ) or IsValid( ply ) ) then
+
+				ply.Parachuting = false
+				sendParStatus(ply)
+				ply.FlarePara = 1
+				ply:ViewPunch( Angle( -15 , 0 , 0 ) )
+
+				local ParaDitch = entsCreate( "v92_zchute_bf2_abandon" )
+				ParaDitch:SetOwner( ply )
+				ParaDitch:SetPos( ply_pos + ply_Forward * DitchedParachute[1] + ply_Right * DitchedParachute[2] + ply_Up * DitchedParachute[3] )
+				ParaDitch:SetAngles( ply_ang * DitchedParachute[4]  )
+				ParaDitch:Spawn()
+				ParaDitch:Activate()
+
+				LoopingSound:Stop()
+
+			end
+
+			if ( ply:OnGround() and ply.Parachuting and not ply.EndParaTime ) or speedbl then
+
+				ply.EndParaTime = CurTime( ) + 0.25
+				sendParStatus(ply, true)
+				ply:ViewPunch( LandPunch )
+
+				LoopingSound:Stop( )
+
+			end
 		end
 
 	end
@@ -232,6 +254,20 @@ end
 
 if CLIENT then
 
+	local sndstr = "player/suit_sprint.wav"
+	function PlayParachuteDeploySND()
+		local fl = GetConVarNumber("vnt_parachutez_cl_notify_volume")
+		if fl == 0 then return end
+		local ply = LocalPlayer()
+		ply:EmitSound(sndstr, nil, nil, fl)
+		-- timer.Simple(2.1, function()
+			-- if IsValid(ply) then
+				-- ply:StopSound( sndstr )
+			-- end
+		-- end)
+	end
+
+	-- Tool Menu
 	local function ParachuteZ_Common( pnl )
 
 		pnl:ControlHelp( "Parachute-Z Controls" )
@@ -240,43 +276,55 @@ if CLIENT then
 
 			["vnt_parachutez_sv_mode"] = 0 ,
 			["vnt_parachutez_cl_volume"] = 0.7 ,
+			["vnt_parachutez_cl_notify_volume"] = 0.5 ,
 
 		}
 
 		pnl:AddControl( "ComboBox" , { ["MenuButton"] = 1 , ["Folder"] = "parachutez_common" , ["Options"] = { [ "#preset.default" ] = Default } , ["CVars"] = table.GetKeys( Default ) } )
 
-		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 2 , 0 )
-		pnl:ControlHelp( "-1=Disabled, 0=All Users, 1=Admin Only, 2=Super Admin Only" )
+		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
+		pnl:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
 
 		pnl:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
+		pnl:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
 
 	end
 
-	-- Tool Menu
 	hook.Add( "PopulateToolMenu", "PopulateParachuteZMenus", function( )
-
 		spawnmenu.AddToolMenuOption( "Options" , "V92" , "Parachute-Z" , "Parachute-Z" , "" , "" , ParachuteZ_Common )
-
 	end)
 
-	function ParachuteShake( UCMD )
+	local function ParachuteShake( ply, pos, angles, fov )
+		if LocalPlayer() != GetViewEntity() then return end
+		local p, y = TimedSin(1, 0, 1, 0), TimedSin(1.2, 0, 2, 0)
+		local view = {
+			angles = angles + Angle( p, y, 0 ),
+		}
 
-		if LocalPlayer( ).Parachuting == true then
+		return view
+	end
 
-			UCMD:SetViewAngles( ( UCMD:GetViewAngles( ) + Angle( math.sin( RealTime( ) * 35 ) * 0.01 , math.sin( RealTime( ) * 35 ) * 0.01 , 0 ) ) )
+	local function DecrSens( orig )
+		return .2
+	end
 
+	local function OnParachuteStart()
+		hook.Add( "CalcView", "ParachuteShake", ParachuteShake)
+		hook.Add( "AdjustMouseSensitivity", "ParachuteSens", DecrSens)
+	end
+
+	local function OnParachuteEnd()
+		hook.Remove( "CalcView", "ParachuteShake")
+		hook.Remove( "AdjustMouseSensitivity", "ParachuteSens")
+	end	
+	net.Receive("PARAIsIn", function()
+		local bl = net.ReadBool()
+		LocalPlayer().Parachuting = bl
+		if bl then
+			OnParachuteStart()
+			return
 		end
-
-	end
-
-	hook.Add( "CreateMove" , "ParachuteShake" , ParachuteShake )
-
-	local function PARAIsIn( um )
-
-		LocalPlayer( ).Parachuting = um:ReadBool( )
-
-	end
-
-	usermessage.Hook( "PARAIsIn" , PARAIsIn )
+		OnParachuteEnd()
+	end)
 
 end
