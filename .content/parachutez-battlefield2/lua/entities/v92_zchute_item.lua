@@ -2,7 +2,7 @@
 AddCSLuaFile( )
 
 ENT.Type = "anim"
-ENT.PrintName = "Parachute box"
+ENT.PrintName = "Parachute"
 ENT.Author = "V92"
 
 ENT.Spawnable = true
