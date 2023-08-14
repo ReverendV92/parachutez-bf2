@@ -2,6 +2,8 @@
 AddCSLuaFile( )
 
 CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
+CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1.5 )
+CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
 CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
 CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
 
@@ -105,26 +107,18 @@ if SERVER then
 
 	local PLAYER = FindMetaTable("Player")
 
-	function PLAYER:HaveParachuteZ()
-		if GetConVarNumber("vnt_parachutez_sv_mode") != 3 then 
-			return self:GetNWBool( "HaveParachuteZ" , true )
-		else
-			return self:GetNWBool( "HaveParachuteZ" , false )
-		end
+	function PLAYER:HaveParachute()
+		return self:GetNWBool("HaveParachute", false)
 	end
 
 	function PLAYER:GiveParachute()
-		if self:HaveParachuteZ() then return false end
-		self:SetNWBool( "HaveParachuteZ" , true )
+		if self:HaveParachute() then return false end
+		self:SetNWBool("HaveParachute", true)
 		return true
 	end
 
 	function PLAYER:RemoveParachute()
-		if GetConVarNumber("vnt_parachutez_sv_mode") != 3 then 
-			return self:GetNWBool( "HaveParachuteZ" , true )
-		else
-			return self:GetNWBool( "HaveParachuteZ" , false )
-		end
+		self:SetNWBool("HaveParachute", false)
 	end
 
 	hook.Add( "PlayerDeath" , "RemoveParachuteZ" , function( victim, inflictor, attacker )
@@ -169,11 +163,12 @@ if SERVER then
 				if onground then continue end
 				if mt == MOVETYPE_NOCLIP then continue end
 				if ply:InVehicle() then continue end
-				if Velocity.z > -600 then continue end
-				if ply:HaveParachuteZ() then 
-					ply.AllowToParachute = true
-					NotifyPlayerParachute(ply)
-				end
+				if Velocity.z > ( GetConVarNumber("vnt_parachutez_sv_velocitylimit") * -1 ) then continue end
+				if !ply:HaveParachute() and GetConVarNumber("vnt_parachutez_sv_mode") == 3 then continue end
+				
+				ply.AllowToParachute = true
+				NotifyPlayerParachute(ply)
+
 				continue
 			end
 
@@ -275,6 +270,8 @@ if CLIENT then
 		local Default = {
 
 			["vnt_parachutez_sv_mode"] = 0 ,
+			["vnt_parachutez_sv_sensitivity"] = 0.2 ,
+			["vnt_parachutez_sv_velocitylimit"] = 500 ,
 			["vnt_parachutez_cl_volume"] = 0.7 ,
 			["vnt_parachutez_cl_notify_volume"] = 0.5 ,
 
@@ -284,6 +281,11 @@ if CLIENT then
 
 		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
 		pnl:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
+
+		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1.5 , 0 )
+		pnl:ControlHelp( "Mouselook sensitivity while parachuting. Default: 0.2" )
+		pnl:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
+		pnl:ControlHelp( "Velocity needed to allow parachuting. Default: 500" )
 
 		pnl:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
 		pnl:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
@@ -305,7 +307,8 @@ if CLIENT then
 	end
 
 	local function DecrSens( orig )
-		return .2
+		-- return .2
+		return GetConVarNumber("vnt_parachutez_sv_sensitivity")
 	end
 
 	local function OnParachuteStart()
