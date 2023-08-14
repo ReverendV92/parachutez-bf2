@@ -4,8 +4,8 @@ AddCSLuaFile( )
 CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
 CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1 )
 CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
-CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
-CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
+CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
+CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
 
 sound.Add({	["name"] = "VNT_ParachuteZ_DetachClip" ,
 	["channel"] = CHAN_BODY ,
@@ -49,8 +49,8 @@ if SERVER then
 
 	-- XYZ Coordinate offset for the parachute entities
 	local ActiveParachute = { 10 , 0 , 100 , 0 }
-	local LandedParachute = { -100 , 50 , 10 , 0 }
-	local DitchedParachute = { -100 , 50 , 10 , 90 }
+	local LandedParachute = { -100 , 50 , 10 , Angle( 0 , 270 , 0 ) }
+	local DitchedParachute = { -100 , 50 , 10 , Angle( 0 , 270 , 0 ) }
 
 	-- Parachute speed for IN_BACK, No Inputs, and IN_FORWARD, respectively
 	local ParachuteSpeed = { 300 , 375 , 450 }
@@ -187,7 +187,7 @@ if SERVER then
 
 				ParaLand:SetOwner( ply )
 				ParaLand:SetPos( ply_pos + ply_Forward * LandedParachute[1] + ply_Right * LandedParachute[2] + ply_Up * LandedParachute[3] )
-				ParaLand:SetAngles( ply_ang * LandedParachute[4]  )
+				ParaLand:SetAngles( ply_ang + LandedParachute[4]  )
 				ParaLand:Spawn()
 				ParaLand:Activate()
 
@@ -223,7 +223,7 @@ if SERVER then
 				local ParaDitch = entsCreate( "v92_zchute_bf2_abandon" )
 				ParaDitch:SetOwner( ply )
 				ParaDitch:SetPos( ply_pos + ply_Forward * DitchedParachute[1] + ply_Right * DitchedParachute[2] + ply_Up * DitchedParachute[3] )
-				ParaDitch:SetAngles( ply_ang * DitchedParachute[4]  )
+				ParaDitch:SetAngles( ply_ang + LandedParachute[4]  )
 				ParaDitch:Spawn()
 				ParaDitch:Activate()
 
@@ -289,6 +289,7 @@ if CLIENT then
 
 		pnl:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
 		pnl:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
+		-- pnl:KeyBinder( "Activate Parachute" , "vnt_parachutez_activate" )
 
 	end
 
