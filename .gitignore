@@ -5,5 +5,5 @@
 *.mdmp
 *.cache
 *.ini
-*.json
 *.db
+*.json
