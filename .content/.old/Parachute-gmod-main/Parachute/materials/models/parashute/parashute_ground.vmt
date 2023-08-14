@@ -1,0 +1,15 @@
+
+vertexlitgeneric
+{
+
+	$basetexture models/parashute/parashute_ground
+	$bumpmap models/parashute/parashute_ground_normal
+
+	$halflambert 1
+
+	$detail models/parashute/cloth_detail
+	$detailscale 8
+	$detailblendfactor 1
+	$detailblendmode 0
+
+}
