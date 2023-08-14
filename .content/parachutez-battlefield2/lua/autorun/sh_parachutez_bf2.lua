@@ -2,7 +2,7 @@
 AddCSLuaFile( )
 
 CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
-CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1.5 )
+CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1 )
 CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
 CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
 CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
@@ -282,7 +282,7 @@ if CLIENT then
 		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
 		pnl:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
 
-		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1.5 , 0 )
+		pnl:NumSlider( "View Sensitivity" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1 , 1 )
 		pnl:ControlHelp( "Mouselook sensitivity while parachuting. Default: 0.2" )
 		pnl:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
 		pnl:ControlHelp( "Velocity needed to allow parachuting. Default: 500" )
