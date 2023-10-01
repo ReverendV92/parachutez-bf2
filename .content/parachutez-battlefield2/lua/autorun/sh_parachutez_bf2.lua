@@ -38,7 +38,6 @@ if SERVER then
 	local entsCreate = ents.Create
 
 	util.AddNetworkString("PZ_Active")
-
 	util.AddNetworkString("PZ_SetServerCommand")
 
 	local function sendParStatus( ply, fl )
