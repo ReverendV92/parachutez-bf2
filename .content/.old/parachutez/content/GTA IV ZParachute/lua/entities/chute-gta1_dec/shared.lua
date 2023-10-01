@@ -1,0 +1,6 @@
+ENT.Type = "anim"
+ENT.PrintName		= "GTA Chute 1 Decor"
+ENT.Author			= "Zoey, Jesse V-92"
+ENT.Contact			= "desertyetti@firestormstudios.us"
+ENT.Purpose			= "Decor version of the GTA Chute 1 Selection"
+ENT.Instructions	= "Spam Space"

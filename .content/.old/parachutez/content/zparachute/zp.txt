@@ -1,0 +1,55 @@
+ZParachute Redux
+
+[img]http://i.imgur.com/EpnESlK.png[/img]
+
+After a long time in development, hopefully it will have been worth making it.
+
+New Features:
+
+Runs on a seperate console command!
+[h1][i]Bind a key to [b]parachute[/b][/i][/h1]
+I.E., type this into the console: 
+bind space "+jump; parachute"
+
+You can also just use your jump key to deploy it if you use that option.
+
+Multiple Models
+- BF2
+- BF2142
+- Just Cause
+- GTA IV
+- Kaos (Homefront, Frontlines: FoW)
+- Resistance & Liberation
+
+Colour Selection for the GTA IV parachute
+- Original Colour (Yellow)
+- Weapon Colour
+- Player Colour
+- Custom Colour
+
+Custom Behavior
+- Unique based on games
+- Custom using CVars
+- Same for all
+
+Debug Prints
+
+Option to use either a separate console command OR the Jump button
+
+Go to Options > V92 > ZParachute to customize your options
+Go to your context menu and click on the ZParachute icon to choose a model
+
+Press your USE key to flare the chute, but if you flare it too long it will collapse and send you falling to your death.
+Press your FORWARD and BACK keys to accelerate and decelerate your descent while parachuting.
+Press WALK + CROUCH at the same time to cut the chute and go into free fall.
+
+Zoey @ Original Parachute
+V92 @ Overhaul, porting models, textures, animations, etc
+DDok1994 @ Porting landed parachute model
+BlackOps @ Model selection screen
+R&L Team @ R&L parachute model
+
+[url=https://trello.com/b/BHzhSvWl/zparachute]Task List for ZParachute[/url]
+[url=http://steamcommunity.com/groups/firestormstudios][img]http://i.imgur.com/iocnueZ.png[/img][/url]
+[url=http://steamcommunity.com/groups/firestormstudios/discussions/0/615085406659037971][img]http://i.imgur.com/9hy1LQU.png[/img][/url]
+[url=https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9DSMFC2HM86RW&lc=US&item_name=Jesse%20V92%27s%20Addons&item_number=Jesse%20V92%20Addons&currency_code=USD&bn=PP%2dDonationsBF%3aflkDAnU%2epng%3aNonHosted][img]http://i.imgur.com/flkDAnU.png[/img][/url]

@@ -1,0 +1,11 @@
+
+UnlitGeneric
+{
+
+	$baseTexture		vgui/hud/v92_base_swep_parachute
+	$ignorez			1
+	$vertexcolor		1
+	$vertexalpha		1
+	$nolod				1
+
+}

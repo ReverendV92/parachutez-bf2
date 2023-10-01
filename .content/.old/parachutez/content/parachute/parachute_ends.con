@@ -1,0 +1,8 @@
+GeometryTemplate.create BundledMesh parachute_ends
+
+ObjectTemplate.create Bundle parachute_ends
+ObjectTemplate.saveInSeparateFile 1
+ObjectTemplate.creator LMA-2:lma
+ObjectTemplate.geometry parachute_ends
+
+include parachute_ends.tweak

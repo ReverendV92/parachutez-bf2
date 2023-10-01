@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\parachute/parachute"
+	"$bumpmap" "models\parachute/parachute_n"
+	"$phong" "1"
+	"$phongexponent" "20"
+	"$phongboost" "20"	
+	"$phongfresnelranges"	"[.1 0.2 2.3]"
+	"$halflambert" "1"
+
+	"$nocull" 1
+}

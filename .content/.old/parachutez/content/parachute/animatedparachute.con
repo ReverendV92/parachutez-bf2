@@ -1,0 +1,8 @@
+GeometryTemplate.create SkinnedMesh animatedparachute
+
+ObjectTemplate.create AnimatedBundle animatedparachute
+ObjectTemplate.saveInSeparateFile 1
+ObjectTemplate.creator BHU-3:bhu
+ObjectTemplate.geometry animatedparachute
+
+include animatedparachute.tweak

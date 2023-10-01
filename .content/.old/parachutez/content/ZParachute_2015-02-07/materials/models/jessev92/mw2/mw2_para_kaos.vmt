@@ -1,0 +1,30 @@
+
+VertexlitGeneric
+{
+	
+	$basetexture				"models/jessev92/mw2/mw2_para_kaos"
+	$bumpmap					"models/jessev92/mw2/mw2_para_n"
+
+	$ssbump						1
+	$ssbumpmathfix				1
+	
+	$halflambert				1
+	$translucent				0
+	
+	$phong						1
+	$phongexponent				50
+	$phongboost					0.1
+	$phongfresnelranges			"[ 0.3 1 7 ]"
+	$phongtint					"[ 0.25 0.25 0.25 ]"
+
+	$detail             		"models/jessev92/detail/cloth"
+	$detailtint					"[ 0.25 0.25 0.25 ]"
+	$detailscale				4
+	$detailblendfactor			1
+	$detailblendmode			0
+	
+	$rimlight					1											// To enable rim lighting (requires phong)
+	$rimlightexponent			50										// Exponent for phong component of rim lighting	
+	$rimlightboost				0.05
+
+}

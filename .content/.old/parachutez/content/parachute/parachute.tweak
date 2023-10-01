@@ -1,0 +1,103 @@
+rem *** Generated with Bf2Editor.exe [created: 2006/5/15 6:16]
+GeometryTemplate.compressVertexData 1
+GeometryTemplate.maxTextureRepeat 16
+ObjectTemplate.activeSafe Parachute parachute
+ObjectTemplate.creator MBA-1:mba
+ObjectTemplate.modifiedByUser "psh"
+ObjectTemplate.setNetworkableInfo BasicInfo
+ObjectTemplate.saveInSeparateFile 1
+rem ---BeginComp:VehicleHud ---
+ObjectTemplate.createComponent VehicleHud
+ObjectTemplate.vehicleHud.hudName "PARACHUTE"
+ObjectTemplate.vehicleHud.showInfo 0
+ObjectTemplate.vehicleHud.miniMapInfo Icon
+ObjectTemplate.vehicleHud.usePlayerIcon 1
+ObjectTemplate.vehicleHud.standardHelpEnabled 0
+ObjectTemplate.vehicleHud.useChildHud 1
+ObjectTemplate.vehicleHud.useSelectionIcons 1
+ObjectTemplate.vehicleHud.useVehicleCommRose 0
+ObjectTemplate.vehicleHud.vehicleIcon Ingame\Vehicles\Icons\Hud\VehicleIcons\parachute.tga
+rem ---EndComp ---
+ObjectTemplate.geometry parachute
+ObjectTemplate.setCollisionMesh parachute
+ObjectTemplate.mapMaterial 0 Collision_Material 1002
+ObjectTemplate.mass 200
+ObjectTemplate.floaterMod 0
+ObjectTemplate.hasMobilePhysics 1
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.collisionGroups 8
+ObjectTemplate.otherCollisionLod 2
+rem -------------------------------------
+ObjectTemplate.addTemplate S_parachute_Ambient
+ObjectTemplate.addTemplate S_parachute_AmbientDamaged
+ObjectTemplate.addTemplate parachute_RotateForceObject
+ObjectTemplate.addTemplate parachute_ForceDown
+ObjectTemplate.setPosition 0/-20/0
+ObjectTemplate.setRotation 0/90/0
+ObjectTemplate.addTemplate parachute_WingMiddle
+ObjectTemplate.setPosition 0/3/0
+ObjectTemplate.setRotation 0/0/0
+ObjectTemplate.addTemplate animatedparachute
+ObjectTemplate.setPosition 0.08/-0.231933/0.122666
+ObjectTemplate.setRotation 20.1152/0/0
+ObjectTemplate.addTemplate parachute_ends
+ObjectTemplate.setPosition 0.08/-0.231933/0.122666
+ObjectTemplate.setRotation 20.1152/0/0
+rem -------------------------------------
+ObjectTemplate.setSoldierExitLocation 0.044/-1.60679/0.260896 0/0/0
+ObjectTemplate.dontAllowExit 1
+ObjectTemplate.seatInformation Parachute 0.0563561/-1.95/0.117778 0/0/0
+ObjectTemplate.seatAnimationSystem Objects/Vehicles/Common/Animations/3p_parachute_animSys.inc
+ObjectTemplate.maintainCameraOnExit 1
+ObjectTemplate.maintainCameraOnEnter 1
+ObjectTemplate.enterOnSpawn 1
+ObjectTemplate.listenerObstruction 0.01
+
+ObjectTemplate.activeSafe Sound S_parachute_Ambient
+ObjectTemplate.lowSamples 2147483647
+ObjectTemplate.mediumSamples 2147483647
+ObjectTemplate.soundFilename "Sound/cockpits/Parachute_ride.ogg"
+ObjectTemplate.loopCount 0
+ObjectTemplate.is3dSound 0
+ObjectTemplate.stopType 0
+ObjectTemplate.volume 0.73
+ObjectTemplate.pitch 1
+ObjectTemplate.pan 0.5
+ObjectTemplate.reverbLevel 1
+
+ObjectTemplate.activeSafe Sound S_parachute_AmbientDamaged
+
+ObjectTemplate.create Wing parachute_WingMiddle
+ObjectTemplate.setNetworkableInfo BasicInfo
+ObjectTemplate.createdInEditor 1
+ObjectTemplate.setWingLift 120
+ObjectTemplate.setFlapLift 120
+ObjectTemplate.setMinRotation 0/-1.5/0
+ObjectTemplate.setMaxRotation 0/2.5/0
+ObjectTemplate.setMaxSpeed 0/300/0
+ObjectTemplate.setAcceleration 0/300/0
+ObjectTemplate.setInputToPitch PIThrottle
+ObjectTemplate.setAutomaticReset 1
+ObjectTemplate.startDelay 1
+
+ObjectTemplate.create ForceObject parachute_ForceDown
+ObjectTemplate.setNetworkableInfo BasicInfo
+ObjectTemplate.createdInEditor 1
+ObjectTemplate.modifiedByUser jab
+ObjectTemplate.createdInEditor 1
+ObjectTemplate.floaterMod 0
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.constantForce 12
+ObjectTemplate.useAbsoluteDirection 1
+ObjectTemplate.startDelay 1
+ObjectTemplate.onlyWhenOccupied 0
+
+ObjectTemplate.create ForceObject parachute_RotateForceObject
+ObjectTemplate.setNetworkableInfo BasicInfo
+ObjectTemplate.createdInEditor 1
+ObjectTemplate.floaterMod 0
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.input PIYaw
+ObjectTemplate.rotationalForce 0.5/0/0
+ObjectTemplate.startDelay 1

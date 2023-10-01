@@ -249,6 +249,140 @@ end
 
 if CLIENT then
 
+if CLIENT then
+
+	--------------------------------------------------
+	-- Test code stolen from TFA base
+	--------------------------------------------------
+
+	function PZ.CheckBoxNet(_parent, label, convar, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local newpanel
+
+		if IsSinglePlayer then
+			newpanel = _parent:CheckBox(label, convar, ...)
+		else
+			newpanel = _parent:CheckBox(label, nil, ...)
+		end
+
+		if not IsSinglePlayer then
+			if not IsValid(newpanel.Button) then return newpanel end
+
+			newpanel.Button.Think = function(_self)
+				local bool = gconvar:GetBool()
+
+				if _self:GetChecked() ~= bool then
+					_self:SetChecked(bool)
+				end
+			end
+
+			newpanel.OnChange = function(_self, _bVal)
+				if not LocalPlayer():IsAdmin() then return end
+				if _bVal == gconvar:GetBool() then return end
+
+				net.Start("SW_SetServerCommand")
+				net.WriteString(convar)
+				net.WriteString(_bVal and "1" or "0")
+				net.SendToServer()
+			end
+		end
+
+		return newpanel
+
+	end
+
+	function PZ.NumSliderNet(_parent, label, convar, min, max, type1, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local newpanel
+	
+		if IsSinglePlayer then
+			--newpanel = _parent:NumSlider(label, convar, min, max, type1, ...)
+			newpanel = _parent:AddControl( "slider" , { ["Label"] = label , ["Command"] = convar , ["Min"] = min , ["Max"] = max , ["Type"] = type1 } )
+		else
+			--newpanel = _parent:NumSlider(label, nil, min, max, type1, ...)
+			newpanel = _parent:AddControl( "slider" , { ["Label"] = label , ["Command"] = nil , ["Min"] = min , ["Max"] = max , ["Type"] = type1 } )
+		end
+	
+		local decimals = 2
+		local sf = "%." .. decimals .. "f"
+	
+		if not IsSinglePlayer then
+			local ignore = false
+	
+			newpanel.Think = function(_self)
+				if _self._wait_for_update and _self._wait_for_update > RealTime() then return end
+				local float = gconvar:GetFloat()
+	
+				if _self:GetValue() ~= float then
+					ignore = true
+					_self:SetValue(float)
+					ignore = false
+				end
+			end
+	
+			newpanel.OnValueChanged = function(_self, _newval)
+				if ignore then return end
+	
+				if not LocalPlayer():IsAdmin() then return end
+				_self._wait_for_update = RealTime() + 1
+	
+				timer.Create("sw_vgui_" .. convar, 0.5, 1, function()
+					if not LocalPlayer():IsAdmin() then return end
+	
+					net.Start("SW_SetServerCommand")
+					net.WriteString(convar)
+					net.WriteString(string.format(sf, _newval))
+					net.SendToServer()
+				end)
+			end
+		end
+	
+		return newpanel
+	end
+
+	function PZ.AddCVarNet(_parent, label, convar, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local newpanel
+
+		if IsSinglePlayer then
+			--newpanel = _parent:CheckBox(label, convar, ...)
+			newpanel = _parent:AddCVar( label, convar, ... )
+		else
+			--newpanel = _parent:CheckBox(label, nil, ...) 
+			newpanel = _parent:AddCVar( label, nil, ... )
+		end
+
+		if not IsSinglePlayer then
+			--print(newpanel.Think)
+			--PrintTable( debug.getmetatable(newpanel.Panel) )
+			if not IsValid(newpanel) then return newpanel end
+
+
+			newpanel.Panel.Think = function(_self)
+				local bool = gconvar:GetBool()
+
+				if _self:GetChecked() ~= bool then
+					_self:SetChecked(bool)
+				end
+			end
+
+			newpanel.OnChecked = function(_self, _bVal)
+				if not LocalPlayer():IsAdmin() then return end
+				if _bVal == gconvar:GetBool() then return end
+
+				net.Start("SW_SetServerCommand")
+				net.WriteString(convar)
+				net.WriteString(_bVal and "1" or "0")
+				net.SendToServer()
+			end
+		end
+
+		return newpanel
+
+	end
+
+	-----
+
 	local sndstr = "player/suit_sprint.wav"
 	function PlayParachuteDeploySND()
 		local fl = GetConVarNumber("vnt_parachutez_cl_notify_volume")
@@ -279,16 +413,22 @@ if CLIENT then
 
 		pnl:AddControl( "ComboBox" , { ["MenuButton"] = 1 , ["Folder"] = "parachutez_common" , ["Options"] = { [ "#preset.default" ] = Default } , ["CVars"] = table.GetKeys( Default ) } )
 
-		pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
+		-- pnl:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
+		SW.NumSliderNet(pnl, "Parachute Mode", "vnt_parachutez_sv_mode", "-1", "3", "int")
 		pnl:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
 
-		pnl:NumSlider( "View Sensitivity" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1 , 1 )
+		-- pnl:NumSlider( "View Sensitivity" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1 , 1 )
+		SW.NumSliderNet(pnl, "View Sensitivity", "vnt_parachutez_sv_sensitivity", "0.2", "1", "int")
 		pnl:ControlHelp( "Mouselook sensitivity while parachuting. Default: 0.2" )
-		pnl:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
+		-- pnl:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
+		SW.NumSliderNet(pnl, "Velocity Barrier", "vnt_parachutez_sv_velocitylimit", "50", "1000", "int")
 		pnl:ControlHelp( "Velocity needed to allow parachuting. Default: 500" )
 
-		pnl:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
-		pnl:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
+		-- pnl:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
+		SW.NumSliderNet(pnl, "Flight Volume", "vnt_parachutez_cl_volume", "0.2", "1", "int")
+		-- pnl:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
+		SW.NumSliderNet(pnl, "Notification Volume", "vnt_parachutez_cl_notify_volume", "0", "1", "int")
+
 		-- pnl:KeyBinder( "Activate Parachute" , "vnt_parachutez_activate" )
 
 	end

@@ -1,0 +1,30 @@
+
+VertexlitGeneric
+{
+	
+	$baseTexture				"models/jessev92/justcause/parachute_cloth_d"
+	$bumpmap					"models/jessev92/justcause/parachute_cloth_b"
+
+	$ssbump						1
+	$ssbumpmathfix				1
+	
+	$nocull						1
+	$halflambert				1
+	
+	$phong						1
+	$phongexponent				50
+	$phongboost					0.1
+	$phongfresnelranges			"[ 0.3 1 7 ]"
+	$phongtint					"[ 0.25 0.25 0.25 ]"
+
+	$detail             		"models/jessev92/detail/cloth_detail"
+	$detailtint					"[ 0.25 0.25 0.25 ]"
+	$detailscale				1
+	$detailblendfactor			1
+	$detailblendmode			0
+	
+	$rimlight					1											// To enable rim lighting (requires phong)
+	$rimlightexponent			50										// Exponent for phong component of rim lighting	
+	$rimlightboost				0.05
+
+}
