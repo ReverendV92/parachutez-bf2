@@ -37,10 +37,12 @@ if SERVER then
 	local playerGetAll, ipairs = player.GetAll, ipairs
 	local entsCreate = ents.Create
 
-	util.AddNetworkString("PARAIsIn")
+	util.AddNetworkString("PZ_Active")
+
+	util.AddNetworkString("PZ_SetServerCommand")
 
 	local function sendParStatus( ply, fl )
-		net.Start("PARAIsIn")
+		net.Start("PZ_Active")
 			net.WriteBool( fl and false or ply.Parachuting)
 		net.Send(ply)
 	end
@@ -462,7 +464,7 @@ if CLIENT then
 		hook.Remove( "CalcView", "ParachuteShake")
 		hook.Remove( "AdjustMouseSensitivity", "ParachuteSens")
 	end	
-	net.Receive("PARAIsIn", function()
+	net.Receive("PZ_Active", function()
 		local bl = net.ReadBool()
 		LocalPlayer().Parachuting = bl
 		if bl then
