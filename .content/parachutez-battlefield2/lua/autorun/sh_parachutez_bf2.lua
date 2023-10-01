@@ -254,7 +254,7 @@ if CLIENT then
 	-- Test code stolen from TFA base
 	--------------------------------------------------
 
-	function PZ.CheckBoxNet(_parent, label, convar, ...)
+	function CheckBoxNet(_parent, label, convar, ...)
 		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
 		local newpanel
 
@@ -290,7 +290,7 @@ if CLIENT then
 
 	end
 
-	function PZ.NumSliderNet(_parent, label, convar, min, max, type1, ...)
+	function NumSliderNet(_parent, label, convar, min, max, type1, ...)
 		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
 		local newpanel
 	
@@ -339,7 +339,7 @@ if CLIENT then
 		return newpanel
 	end
 
-	function PZ.AddCVarNet(_parent, label, convar, ...)
+	function AddCVarNet(_parent, label, convar, ...)
 		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
 		local newpanel
 
@@ -414,21 +414,21 @@ if CLIENT then
 		Panel:AddControl( "ComboBox" , { ["MenuButton"] = 1 , ["Folder"] = "parachutez_common" , ["Options"] = { [ "#preset.default" ] = Default } , ["CVars"] = table.GetKeys( Default ) } )
 
 		-- Panel:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
-		PZ.NumSliderNet(Panel, "Parachute Mode", "vnt_parachutez_sv_mode", "-1", "3", "int")
+		NumSliderNet(Panel, "Parachute Mode", "vnt_parachutez_sv_mode", "-1", "3", "int")
 		Panel:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
-		-- PZ.NumSliderNet(Panel, "Parachute Style", "vnt_parachutez_cl_style", "0", "5", "int")
+		-- NumSliderNet(Panel, "Parachute Style", "vnt_parachutez_cl_style", "0", "5", "int")
 
 		-- Panel:NumSlider( "View Sensitivity" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1 , 1 )
-		PZ.NumSliderNet(Panel, "View Sensitivity", "vnt_parachutez_sv_sensitivity", "0.2", "1", "int")
+		NumSliderNet(Panel, "View Sensitivity", "vnt_parachutez_sv_sensitivity", "0.2", "1", "int")
 		Panel:ControlHelp( "Mouselook sensitivity while parachuting. Default: 0.2" )
 		-- Panel:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
-		PZ.NumSliderNet(Panel, "Velocity Barrier", "vnt_parachutez_sv_velocitylimit", "50", "1000", "int")
+		NumSliderNet(Panel, "Velocity Barrier", "vnt_parachutez_sv_velocitylimit", "50", "1000", "int")
 		Panel:ControlHelp( "Velocity needed to allow parachuting. Default: 500" )
 
 		-- Panel:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
-		PZ.NumSliderNet(Panel, "Flight Volume", "vnt_parachutez_cl_volume", "0.2", "1", "int")
+		NumSliderNet(Panel, "Flight Volume", "vnt_parachutez_cl_volume", "0.2", "1", "int")
 		-- Panel:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
-		PZ.NumSliderNet(Panel, "Notification Volume", "vnt_parachutez_cl_notify_volume", "0", "1", "int")
+		NumSliderNet(Panel, "Notification Volume", "vnt_parachutez_cl_notify_volume", "0", "1", "int")
 
 		-- Panel:KeyBinder( "Activate Parachute" , "vnt_parachutez_activate" )
 
