@@ -1,0 +1,11 @@
+
+vertexlitgeneric
+{
+
+	$basetexture models/v92/parachutez/parachute_rnl_flying
+	$bumpmap models/v92/parachutez/parachute_rnl_flying_normal
+	$halflambert 1
+	$nocull 1
+	$alphatest 1
+
+}

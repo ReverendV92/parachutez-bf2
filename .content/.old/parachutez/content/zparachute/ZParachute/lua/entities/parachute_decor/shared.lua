@@ -1,6 +1,0 @@
-ENT.Type = "anim"
-ENT.PrintName		= "Decorative parachute"
-ENT.Author			= "Zoey"
-ENT.Contact			= ""
-ENT.Purpose			= ""
-ENT.Instructions	= ""

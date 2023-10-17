@@ -1,0 +1,10 @@
+
+vertexlitgeneric
+{
+
+	$basetexture models/v92/parachutez/parachute_justcause_flying
+	$bumpmap models/v92/parachutez/parachute_justcause_flying_normal
+	$halflambert 1
+	$nocull 1
+
+}

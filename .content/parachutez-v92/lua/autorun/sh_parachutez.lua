@@ -1,12 +1,12 @@
 
 AddCSLuaFile( )
 
-CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
-CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1 )
-CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
-CreateConVar( "vnt_parachutez_cl_style" , 0 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set client parachute model" , 0 , 5 )
-CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
-CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
+local pzCVmode = CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
+local pzCVsensitivity = CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1 )
+local pzCVvelocity = CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
+local pzCVstyle = CreateConVar( "vnt_parachutez_cl_style" , 0 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set client parachute model" , 0 , 6 )
+local pzCVmovevolume = CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
+local pzCVnotifyvolume = CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
 
 sound.Add({	["name"] = "VNT_ParachuteZ_DetachClip" ,
 	["channel"] = CHAN_BODY ,
@@ -90,16 +90,19 @@ if SERVER then
 	function ParachuteKey( ply , key )
 
 		-- If the mod is diabled or player is a spectator, don't run.
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
+		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
+		if ( pzCVmode:GetInt() == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
 
 		-- If player is already parachuting, don't run.
 		if ply.Parachuting then return end
 
 		-- If Admin-Only mode is active and the user is not an admin, don't run.
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
+		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
+		if ( pzCVmode:GetInt() == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
 		-- If Super Admin-Only mode is active and the user is not a super admin, don't run.
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
+		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
+		if ( pzCVmode:GetInt() == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
 		-- If player is allowed to parachute and they're activating their parachute key...
 		if ply.AllowToParachute and key == IN_JUMP then
@@ -120,7 +123,7 @@ if SERVER then
 			ply:ViewPunch( Angle( 35 , 0 , 0 ) )
 
 			-- Create the parachute entity
-			local Para = entsCreate( "v92_zchute_bf2_active" )
+			local Para = entsCreate( "v92_zchute_active" )
 			Para:SetOwner( ply )
 			Para:SetPos( ply:GetPos() + ply:GetForward() * ActiveParachute[1] + ply:GetRight() * ActiveParachute[2] + ply:GetUp() * ActiveParachute[3] )
 			Para:SetAngles( ply:GetAngles() )
@@ -129,7 +132,8 @@ if SERVER then
 
 			-- Create the sound
 			LoopingSound = CreateSound( ply , "v92/bf2/vehicles/air/parachute/parachute_ride_loop.wav" )
-			LoopingSound:PlayEx( GetConVarNumber( "vnt_parachutez_cl_volume" ) , 100 )
+			-- LoopingSound:PlayEx( GetConVarNumber( "vnt_parachutez_cl_volume" ) , 100 )
+			LoopingSound:PlayEx( pzCVmovevolume:GetFloat() , 100 )
 
 		end
 
@@ -171,7 +175,8 @@ if SERVER then
 	function ParachuteThink( )
 
 		-- If the mod is diabled, don't run.
-		if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) then return false end
+		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) then return false end
+		if ( pzCVmode:GetInt() == -1 ) then return false end
 
 		-- Find players so we can scrutinize them...
 		for k , ply in ipairs( playerGetAll( ) ) do
@@ -194,8 +199,10 @@ if SERVER then
 				if onground then continue end
 				if mt == MOVETYPE_NOCLIP then continue end
 				if ply:InVehicle() then continue end
-				if Velocity.z > ( GetConVarNumber("vnt_parachutez_sv_velocitylimit") * -1 ) then continue end
-				if !ply:HaveParachute() and GetConVarNumber("vnt_parachutez_sv_mode") == 3 then continue end
+				-- if Velocity.z > ( GetConVarNumber("vnt_parachutez_sv_velocitylimit") * -1 ) then continue end
+				if Velocity.z > ( pzCVvelocity:GetInt() * -1 ) then continue end
+				-- if !ply:HaveParachute() and GetConVarNumber("vnt_parachutez_sv_mode") == 3 then continue end
+				if !ply:HaveParachute() and pzCVmode:GetInt() == 3 then continue end
 				
 				ply.AllowToParachute = true
 				NotifyPlayerParachute(ply)
@@ -214,7 +221,7 @@ if SERVER then
 
 				ply:ViewPunch( StartPunch )
 
-				local ParaLand = entsCreate( "v92_zchute_bf2_abandon" )
+				local ParaLand = entsCreate( "v92_zchute_abandon" )
 
 				ParaLand:SetOwner( ply )
 				ParaLand:SetPos( ply_pos + ply_Forward * LandedParachute[1] + ply_Right * LandedParachute[2] + ply_Up * LandedParachute[3] )
@@ -251,7 +258,7 @@ if SERVER then
 				ply.FlarePara = 1
 				ply:ViewPunch( Angle( -15 , 0 , 0 ) )
 
-				local ParaDitch = entsCreate( "v92_zchute_bf2_abandon" )
+				local ParaDitch = entsCreate( "v92_zchute_abandon" )
 				ParaDitch:SetOwner( ply )
 				ParaDitch:SetPos( ply_pos + ply_Forward * DitchedParachute[1] + ply_Right * DitchedParachute[2] + ply_Up * DitchedParachute[3] )
 				ParaDitch:SetAngles( ply_ang + LandedParachute[4]  )
@@ -411,7 +418,8 @@ if CLIENT then
 
 	local sndstr = "player/suit_sprint.wav"
 	function PlayParachuteDeploySND()
-		local fl = GetConVarNumber("vnt_parachutez_cl_notify_volume")
+		-- local fl = GetConVarNumber("vnt_parachutez_cl_notify_volume")
+		local fl = pzCVnotifyvolume:GetFloat()
 		if fl == 0 then return end
 		local ply = LocalPlayer()
 		ply:EmitSound(sndstr, nil, nil, fl)
@@ -440,21 +448,17 @@ if CLIENT then
 
 		Panel:AddControl( "ComboBox" , { ["MenuButton"] = 1 , ["Folder"] = "parachutez_common" , ["Options"] = { [ "#preset.default" ] = Default } , ["CVars"] = table.GetKeys( Default ) } )
 
-		-- Panel:NumSlider( "Parachute Mode" , "vnt_parachutez_sv_mode" , -1 , 3 , 0 )
 		NumSliderNet(Panel, "Parachute Mode", "vnt_parachutez_sv_mode", "-1", "3", "int")
 		Panel:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
-		-- NumSliderNet(Panel, "Parachute Style", "vnt_parachutez_cl_style", "0", "5", "int")
+		NumSliderNet(Panel, "Parachute Style", "vnt_parachutez_cl_style", "0", "6", "int")
+		Panel:ControlHelp( "Parachute Model\n0: Battlefield 2\n1: Battlefield 3/4\n2: Battlefield 2142\n3: Resistance & Liberation\n4: Frontlines: FoW\n5: Just Cause\n6: GTA 4" )
 
-		-- Panel:NumSlider( "View Sensitivity" , "vnt_parachutez_sv_sensitivity" , 0.2 , 1 , 1 )
 		NumSliderNet(Panel, "View Sensitivity", "vnt_parachutez_sv_sensitivity", "0.2", "1", "float")
 		Panel:ControlHelp( "Mouselook sensitivity while parachuting. Default: 0.2" )
-		-- Panel:NumSlider( "Velocity Barrier" , "vnt_parachutez_sv_velocitylimit" , 50 , 1000 , 0 )
 		NumSliderNet(Panel, "Velocity Barrier", "vnt_parachutez_sv_velocitylimit", "50", "1000", "int")
 		Panel:ControlHelp( "Velocity needed to allow parachuting. Default: 500" )
 
-		-- Panel:NumSlider( "Flight Volume" , "vnt_parachutez_cl_volume" , 0.2 , 1 , 1 )
 		NumSliderNet(Panel, "Flight Volume", "vnt_parachutez_cl_volume", "0.2", "1", "float")
-		-- Panel:NumSlider( "Notification Volume" , "vnt_parachutez_cl_notify_volume" , 0 , 1 , 1 )
 		NumSliderNet(Panel, "Notification Volume", "vnt_parachutez_cl_notify_volume", "0", "1", "float")
 
 		-- Panel:KeyBinder( "Activate Parachute" , "vnt_parachutez_activate" )
@@ -476,7 +480,8 @@ if CLIENT then
 	end
 
 	local function DecrSens( orig )
-		return GetConVarNumber("vnt_parachutez_sv_sensitivity")
+		-- return GetConVarNumber("vnt_parachutez_sv_sensitivity")
+		return pzCVsensitivity:GetFloat()
 	end
 
 	local function OnParachuteStart()
