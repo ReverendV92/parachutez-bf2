@@ -4,6 +4,7 @@ AddCSLuaFile( )
 local pzCVmode = CreateConVar( "vnt_parachutez_sv_mode" , 0 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute mode;\n-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Requires Entity Pickup" , -1 , 3 )
 local pzCVsensitivity = CreateConVar( "vnt_parachutez_sv_sensitivity" , 0.2 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set parachute look sensitivity. Default: 0.2" , 0.2 , 1 )
 local pzCVvelocity = CreateConVar( "vnt_parachutez_sv_velocitylimit" , 500 , { FCVAR_ARCHIVE , FCVAR_REPLICATED } , "[Parachute Z] (Server) Set velocity needed to open parachute. Default: 500" , 50 , 1000 )
+local pzCVenable = CreateConVar( "vnt_parachutez_cl_enable" , 1 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Client-side toggle for the parachute." , 0 , 1 )
 local pzCVstyle = CreateConVar( "vnt_parachutez_cl_style" , 0 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set client parachute model" , 0 , 6 )
 local pzCVmovevolume = CreateConVar( "vnt_parachutez_cl_volume" , 0.7 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set flight sound volume" , 0.2 , 1 )
 local pzCVnotifyvolume = CreateConVar( "vnt_parachutez_cl_notify_volume" , 0.5 , { FCVAR_ARCHIVE , FCVAR_USERINFO } , "[Parachute Z] (Client) Set parachute notification sound volume.\nSet to 0 to disable." , 0 , 1 )
@@ -175,8 +176,8 @@ if SERVER then
 	function ParachuteThink( )
 
 		-- If the mod is diabled, don't run.
-		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) then return false end
 		if ( pzCVmode:GetInt() == -1 ) then return false end
+		if ( pzCVenable:GetInt() == 0 ) then return false end
 
 		-- Find players so we can scrutinize them...
 		for k , ply in ipairs( playerGetAll( ) ) do
@@ -440,6 +441,7 @@ if CLIENT then
 			["vnt_parachutez_sv_mode"] = 0 ,
 			["vnt_parachutez_sv_sensitivity"] = 0.2 ,
 			["vnt_parachutez_sv_velocitylimit"] = 500 ,
+			["vnt_parachutez_cl_enable"] = 1 ,
 			["vnt_parachutez_cl_style"] = 0 ,
 			["vnt_parachutez_cl_volume"] = 0.7 ,
 			["vnt_parachutez_cl_notify_volume"] = 0.5 ,
@@ -448,6 +450,8 @@ if CLIENT then
 
 		Panel:AddControl( "ComboBox" , { ["MenuButton"] = 1 , ["Folder"] = "parachutez_common" , ["Options"] = { [ "#preset.default" ] = Default } , ["CVars"] = table.GetKeys( Default ) } )
 
+		CheckBoxNet(Panel, "Enable Parachute" , "vnt_parachutez_cl_enable" )
+		Panel:ControlHelp( "Client-side parachute toggle. Disable if using other add-ons." )
 		NumSliderNet(Panel, "Parachute Mode", "vnt_parachutez_sv_mode", "-1", "3", "int")
 		Panel:ControlHelp( "-1=Disabled\n0=All Users\n1=Admin Only\n2=Super Admin Only\n3=Require entity pickup" )
 		NumSliderNet(Panel, "Parachute Style", "vnt_parachutez_cl_style", "0", "6", "int")
