@@ -19,23 +19,18 @@ function ENT:Initialize( )
 	self:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	self:SetNetworkedString( "Owner" , "World" )
 	self:EmitSound( "VNT_ParachuteZ_DetachClip" )
-	self.RemoveMe = CurTime( ) + 10
 	self:SetSkin( GetConVar("vnt_parachutez_cl_style"):GetInt() )
+
+	timer.Simple( 10 , function()
+
+		SafeRemoveEntity( self )
+
+	end)
 
 end
 
 function ENT:Think( )
 
-	if not SERVER then return false end
-
-	if self.RemoveMe < CurTime( ) then
-
-		if SERVER then
-
-			SafeRemoveEntity( self )
-
-		end
-
-	end
+	return false
 
 end

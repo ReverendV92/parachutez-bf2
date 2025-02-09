@@ -91,18 +91,15 @@ if SERVER then
 	function ParachuteKey( ply , key )
 
 		-- If the mod is diabled or player is a spectator, don't run.
-		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
 		if ( pzCVmode:GetInt() == -1 ) or ply:Team() == TEAM_SPECTATOR then return false end
 
 		-- If player is already parachuting, don't run.
 		if ply.Parachuting then return end
 
 		-- If Admin-Only mode is active and the user is not an admin, don't run.
-		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 		if ( pzCVmode:GetInt() == 1 and !table.HasValue( { "superadmin" , "admin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
 		-- If Super Admin-Only mode is active and the user is not a super admin, don't run.
-		-- if ( GetConVarNumber("vnt_parachutez_sv_mode") == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 		if ( pzCVmode:GetInt() == 2 and !table.HasValue( { "superadmin" } , ply:GetNWString( "usergroup" ) ) ) then return end
 
 		-- If player is allowed to parachute and they're activating their parachute key...
@@ -133,7 +130,6 @@ if SERVER then
 
 			-- Create the sound
 			LoopingSound = CreateSound( ply , "v92/bf2/vehicles/air/parachute/parachute_ride_loop.wav" )
-			-- LoopingSound:PlayEx( GetConVarNumber( "vnt_parachutez_cl_volume" ) , 100 )
 			LoopingSound:PlayEx( pzCVmovevolume:GetFloat() , 100 )
 
 		end
@@ -197,11 +193,14 @@ if SERVER then
 
 			-- If user is parachuting...
 			if !ply.Parachuting then 
+
 				if onground then continue end
 				if mt == MOVETYPE_NOCLIP then continue end
 				if ply:InVehicle() then continue end
+
 				-- if Velocity.z > ( GetConVarNumber("vnt_parachutez_sv_velocitylimit") * -1 ) then continue end
 				if Velocity.z > ( pzCVvelocity:GetInt() * -1 ) then continue end
+
 				-- if !ply:HaveParachute() and GetConVarNumber("vnt_parachutez_sv_mode") == 3 then continue end
 				if !ply:HaveParachute() and pzCVmode:GetInt() == 3 then continue end
 				
@@ -209,6 +208,7 @@ if SERVER then
 				NotifyPlayerParachute(ply)
 
 				continue
+
 			end
 
 			-- If the player enters a non-parachute situtation...
